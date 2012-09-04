@@ -27,9 +27,11 @@ def radix_sort(vals)
   longest = strs.max_by(&:length).length
   strs = strs.map{|s| s.rjust(longest,'0')}
   (longest-1).downto(0) do |b|
-    # TODO: replace .sort with bubble sort
-    strs = strs.sort{|s1,s2| s1[b].to_i <=> s2[b].to_i}
-    p strs
+    buckets = [[],[],[],[],[],[],[],[],[]]
+    strs.each do |s|
+      buckets[s[b].to_i] << s
+    end
+    strs = buckets.flatten
   end
   strs.map &:to_i
 end
@@ -37,12 +39,38 @@ end
 def merge_sort(vals)
   if vals.length == 2
     vals[0],vals[1] = vals[1],vals[0] if vals[0] > vals[1]
-  else
+  elsif vals.length > 2
     p = vals.length / 2
-    v1 = vals[0..p-1]
-    v2 = vals[p..-1]
-    merge_sort v1
-
-
+    v1 = merge_sort vals[0..p-1]
+    v2 = merge_sort vals[p..-1]
+    continue = true
+    e1 = e2 = nil
+    vals = []
+    while continue
+      e1 = v1.delete_at(0) if e1.nil? and v1.present?
+      e2 = v2.delete_at(0) if e2.nil? and v2.present?
+      if e1 and e2
+        if e1 <= e2
+          vals << e1
+          e1 = nil
+        else
+          vals << e2
+          e2 = nil
+        end
+      elsif e1
+        vals << e1
+        vals += v1 unless v1.empty?
+        e1 = nil
+        continue = false
+      elsif e2
+        vals << e2
+        vals += v2 unless v2.empty?
+        e2 = nil
+        continue = false
+      else
+        continue = false
+      end
+    end
+  end
   vals
 end
